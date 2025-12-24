@@ -1,21 +1,28 @@
 package com.korit.post_mini_project_back.config;
 
 import com.korit.post_mini_project_back.filter.JwtAuthenticationFilter;
+import com.korit.post_mini_project_back.security.JwtAuthenticationEntryPoint;
 import com.korit.post_mini_project_back.security.OAuth2SuccessHandler;
 import com.korit.post_mini_project_back.service.OAuth2UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -24,6 +31,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final OAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
@@ -41,9 +49,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
 
         http.oauth2Login(oauth2 ->
-                oauth2.userInfoEndpoint(userInfo ->
-                        userInfo.userService(oAuth2UserService))
+                oauth2.userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((req, resp, exception) -> {
+
+                        })
         );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -54,8 +64,13 @@ public class SecurityConfig {
             auth.requestMatchers("/swagger-ui/**").permitAll();
             auth.requestMatchers("/swagger-ui.html").permitAll();
             auth.requestMatchers("/doc").permitAll();
+            auth.requestMatchers("/oauth2/**").permitAll();
+            auth.requestMatchers("/login/**").permitAll();
+            auth.requestMatchers("/image/**").permitAll();
             auth.anyRequest().authenticated();
         });
+
+        http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
 
         return http.build();
     }

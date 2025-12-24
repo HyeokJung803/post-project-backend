@@ -9,4 +9,5 @@ public interface UserMapper {
     User findByUserId(int userId);
     User findByOauth2Id(String oauth2Id);
     User findByNickname(String nickname);
+    String createNickname();
 }

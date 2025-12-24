@@ -1,7 +1,10 @@
 package com.korit.post_mini_project_back.jwt;
 
 import com.korit.post_mini_project_back.entity.User;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,28 +23,25 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(User userEntity) {
-
         Date now = new Date();
-        long expiredTime = now.getTime() + (1000L * 60L * 60L * 24L);
+        long expiredTime = now.getTime() + (1000l * 60l * 60l * 24l);
         Date expiredDate = new Date(expiredTime);
 
-
         return Jwts.builder()
-                .subject("server Access token")
-                .issuer("koyeh")
+                .subject("Server Access Token")
+                .issuer("code1218")
                 .issuedAt(new Date())
-                .expiration(expiredDate) // 필수
+                .expiration(expiredDate)    // 필수
                 .claim("userId", userEntity.getUserId()) // 필수
                 .signWith(key, SignatureAlgorithm.HS256) // 필수
                 .compact();
     }
 
     public boolean validateToken(String token) {
-        Claims claims = null;
         try {
-        JwtParser jwtParser = Jwts.parser()
-                .setSigningKey(key)
-                .build();
+            JwtParser jwtParser = Jwts.parser()
+                    .setSigningKey(key)
+                    .build();
             jwtParser.parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
@@ -58,3 +58,17 @@ public class JwtTokenProvider {
                 .get("userId");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
